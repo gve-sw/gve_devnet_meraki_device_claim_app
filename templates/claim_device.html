@@ -1,0 +1,111 @@
+<!-- Template page: offers three sections to visualize a 3 steps workflow.-->
+
+{% extends "masterPage.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Left Rail -->
+    <div class="col-xl-3"></div>
+
+    <!-- Middle Rail -->
+    <div class="col-xl-6">
+        <div class="section" >
+            <div class="panel panel--loose panel--raised base-margin-bottom">
+                <h2 class="subtitle">Step 1: Choose organization and network </h2>
+                <div class="section"> 
+                    <form action="/select_organization_network_claim_device" method="POST" >
+                        <div class="form-group base-margin-bottom">
+                            <div class="form-group__text select">
+                                    <select name="organization_id" id='organization_id' required>
+                                        <option disabled selected hidden value="0">Please choose...</option>
+                                        {% for org in organizations %}<option value="{{org.id}}" {% if selected_organization.id == org.id %} selected {% endif %}>{{org.name}} (ID:{{org.id}})</option>{% endfor %}
+                                    </select>
+                                <label for="organization_id">Organization*</label>
+                            </div>
+                        </div>
+
+                        <!--Network fields-->
+                        <div id="network_select" class="network-select" {% if not selected_organization %} hidden {% endif %} >
+                            <div class="form-group base-margin-bottom">
+                                <div class="form-group__text select">
+                                    <select name="network_id" id='network_id' class='networks'>
+                                        <option disabled selected hidden value="0">Please choose...</option>
+                                        {% if networks %}
+                                            {% for network in networks %}
+                                                <option value="{{network['id']}}" {% if selected_network.id == network['id'] %} selected {% endif %}>{{network['name']}} (ID:{{network['id']}})</option>                                                      
+                                            {% endfor %}
+                                        {% endif %}
+                                    </select>
+                                    <label for="network_id">Network*</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <span class="required-label pull-right">* required fields</span>
+                        <br>
+                        <div class="flex-fluid" style="text-align: right;">
+                            <input name="submit_button" class="btn btn-primary" type="submit" id="submit_netw_org" value="Search" style="display:inline" onclick="loading_network_organization()">
+                        </div>
+                        <div class="loader loader--small" aria-label="Loading, please wait..." id="loading_netw_org" style="display:none">
+                            <div class="wrapper">
+                                <div class="wheel" style="width:20px;height:20px;"></div>
+                            </div>
+                        </div>
+                    </form>
+                </div> 
+            </div>
+            <div class="panel panel--loose panel--raised base-margin-bottom"id="hello" style="display:none"></div>
+        </div>
+        <div class="section" {% if not selected_network %} hidden {% endif %}>
+            <div class="panel panel--loose panel--raised base-margin-bottom">
+                <h2 class="subtitle">Step 2: Claim device </h2>
+                <form action="/submit_serial" method="POST" >
+                    <div class="form-group base-margin-bottom">
+                        <div class="form-group__text">
+                            <input id="serial_number" name="serial_number" rows="1" required="" placeholder="Q234-ABCD-0001" 
+                            pattern="{4}-{4}-{4}" title="A serial number consists of 12 characters"></input>
+                            <label for="serial_number">
+                                <span>Serial Number</span>
+                                <span title="this is a required field">*</span>
+                            </label>
+                        </div>
+                        <span class="required-label pull-right">* required fields</span>
+                        <br>
+                        <div class="flex-fluid" style="text-align: right;">
+                            <input name="submit_button" class="btn btn-primary" type="submit" id="submit_serial_button" value="Submit" style="display:inline">
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+        <div class="section" {% if claim_device_response == [] %} hidden {% endif %}>
+            <div class="panel panel--loose panel--raised base-margin-bottom" {% if claim_device_response == [] %} hidden {% endif %}>
+                <h2 class="subtitle" {% if claim_device_response == [] %} hidden {% endif %} >Summary of network devices claimed</h2>
+                <br>
+                {% if not claim_device_response.errors %}
+                <div class="toast base-margin-bottom">
+                    <div class="toast__icon text-success icon-check-outline"></div>
+                    <div class="toast__body">
+                        <div class="toast__title">Network device successfully claimed</div>
+                        <div class="toast__message">We have successfully claimed the network device with serial number: {{claim_device_response['serial_number']}} </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="toast base-margin-bottom">
+                    <div class="toast__icon text-danger icon-error-outline"></div>
+                    <div class="toast__body">
+                        <div class="toast__title">Network device claim unsuccessful</div>
+                        <div class="toast__message">We failed to the claim the network device with the following error message: {{claim_device_response.errors}} </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Right Rail -->
+    <div class="col-xl-3"></div>
+</div>
+{%  endblock %}
